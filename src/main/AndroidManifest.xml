@@ -1,0 +1,18 @@
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    package="com.sj.attendance.provider">
+
+    <application android:icon="@drawable/app_icon">
+        <!-- You don't need to include android:required="false" if your app's
+             minSdkVersion is 28 or higher. -->
+        <uses-library
+            android:name="android.test.runner"
+            android:required="false" />
+
+        <provider
+            android:name="com.sj.attendance.provider.AttendanceProvider"
+            android:authorities="com.sj.attendance.provider.policies"
+            android:label="@string/provider_label"
+            android:multiprocess="false"
+            android:exported="false" />
+    </application>
+</manifest>
