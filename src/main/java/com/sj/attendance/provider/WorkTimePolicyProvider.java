@@ -19,9 +19,9 @@ import android.util.Log;
 
 import java.util.HashMap;
 
-public class AttendanceProvider extends ContentProvider {
-    private static final String TAG = AttendanceProvider.class.getSimpleName();
-    private static final String KEYWORD = AttendanceProvider.class.getSimpleName();
+public class WorkTimePolicyProvider extends ContentProvider {
+    private static final String TAG = WorkTimePolicyProvider.class.getSimpleName();
+    private static final String KEYWORD = WorkTimePolicyProvider.class.getSimpleName();
 
     private static final String PREFIX = WorkTimePolicyData.class.getSimpleName();
     private static final String DB_NAME = PREFIX + ".db";

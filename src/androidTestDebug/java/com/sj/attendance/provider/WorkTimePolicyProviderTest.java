@@ -15,14 +15,14 @@ import org.junit.Test;
 
 import java.util.LinkedList;
 
-public class AttendanceProviderTest extends ProviderTestCase2 {
-    private static final String TAG = AttendanceProviderTest.class.getSimpleName();
+public class WorkTimePolicyProviderTest extends ProviderTestCase2 {
+    private static final String TAG = WorkTimePolicyProviderTest.class.getSimpleName();
 
-    public AttendanceProviderTest() {
-        super(AttendanceProvider.class, "com.sj.providers.Template");
+    public WorkTimePolicyProviderTest() {
+        super(WorkTimePolicyProvider.class, "com.sj.providers.Template");
     }
 
-    public AttendanceProviderTest(Class providerClass, String providerAuthority) {
+    public WorkTimePolicyProviderTest(Class providerClass, String providerAuthority) {
         super(providerClass, providerAuthority);
     }
 
