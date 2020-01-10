@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="app_label">Attendance Storage</string>
-    <string name="provider_label">AttendanceProvider</string>
+    <string name="provider_policy_label">WorkTimePolicyProvider</string>
+    <string name="provider_record_label">CheckRecordProvider</string>
 </resources>

@@ -19,46 +19,47 @@ import android.util.Log;
 
 import java.util.HashMap;
 
-public class WorkTimePolicyProvider extends ContentProvider {
-    private static final String TAG = WorkTimePolicyProvider.class.getSimpleName();
-    private static final String KEYWORD = WorkTimePolicyProvider.class.getSimpleName();
+public class WorkTimePolicyDataProvider extends ContentProvider {
+    private static final String TAG = WorkTimePolicyDataProvider.class.getSimpleName();
+    private static final String KEYWORD = WorkTimePolicyDataProvider.class.getSimpleName();
 
-    private static final String PREFIX = WorkTimePolicyData.class.getSimpleName();
-    private static final String DB_NAME = PREFIX + ".db";
+    private static final String DB_NAME = Attendance.DB_NAME_PREFIX + ".db";
+
+    private static final String PREFIX = "policy";
     private static final String DB_TABLE = PREFIX + "Table";
     private static final int DB_VERSION = 1;
 
     private static final String DB_CREATE = "create table " + DB_TABLE +
-            " (" + WorkTimePolicyData.ID + " integer primary key autoincrement, " +
-            WorkTimePolicyData.UUID + " text not null, " +
-            WorkTimePolicyData.NAME + " text not null, " +
-            WorkTimePolicyData.SHORT_NAME + " text not null, " +
-            WorkTimePolicyData.TYPE + " integer , " +
-            WorkTimePolicyData.CHECK_IN + " long , " +
-            WorkTimePolicyData.LATEST_CHECK_IN + " long , " +
-            WorkTimePolicyData.CHECK_OUT + " long );";
+            " (" + WorkTimePolicyDataHelper.ID + " integer primary key autoincrement, " +
+            WorkTimePolicyDataHelper.UUID + " text not null, " +
+            WorkTimePolicyDataHelper.NAME + " text not null, " +
+            WorkTimePolicyDataHelper.SHORT_NAME + " text not null, " +
+            WorkTimePolicyDataHelper.TYPE + " integer , " +
+            WorkTimePolicyDataHelper.CHECK_IN + " long , " +
+            WorkTimePolicyDataHelper.LATEST_CHECK_IN + " long , " +
+            WorkTimePolicyDataHelper.CHECK_OUT + " long );";
 
     private static final UriMatcher uriMatcher;
 
     static {
         uriMatcher = new UriMatcher(UriMatcher.NO_MATCH);
-        uriMatcher.addURI(WorkTimePolicyData.AUTHORITY, "item", WorkTimePolicyData.ITEM);
-        uriMatcher.addURI(WorkTimePolicyData.AUTHORITY, "item/#", WorkTimePolicyData.ITEM_ID);
-        uriMatcher.addURI(WorkTimePolicyData.AUTHORITY, "pos/#", WorkTimePolicyData.ITEM_POS);
+        uriMatcher.addURI(WorkTimePolicyDataHelper.AUTHORITY, "item", WorkTimePolicyDataHelper.ITEM);
+        uriMatcher.addURI(WorkTimePolicyDataHelper.AUTHORITY, "item/#", WorkTimePolicyDataHelper.ITEM_ID);
+        uriMatcher.addURI(WorkTimePolicyDataHelper.AUTHORITY, "pos/#", WorkTimePolicyDataHelper.ITEM_POS);
     }
 
     private static final HashMap<String, String> articleProjectionMap;
 
     static {
         articleProjectionMap = new HashMap<String, String>();
-        articleProjectionMap.put(WorkTimePolicyData.ID, WorkTimePolicyData.ID);
-        articleProjectionMap.put(WorkTimePolicyData.UUID, WorkTimePolicyData.UUID);
-        articleProjectionMap.put(WorkTimePolicyData.NAME, WorkTimePolicyData.NAME);
-        articleProjectionMap.put(WorkTimePolicyData.SHORT_NAME, WorkTimePolicyData.SHORT_NAME);
-        articleProjectionMap.put(WorkTimePolicyData.TYPE, WorkTimePolicyData.TYPE);
-        articleProjectionMap.put(WorkTimePolicyData.CHECK_IN, WorkTimePolicyData.CHECK_IN);
-        articleProjectionMap.put(WorkTimePolicyData.LATEST_CHECK_IN, WorkTimePolicyData.LATEST_CHECK_IN);
-        articleProjectionMap.put(WorkTimePolicyData.CHECK_OUT, WorkTimePolicyData.CHECK_OUT);
+        articleProjectionMap.put(WorkTimePolicyDataHelper.ID, WorkTimePolicyDataHelper.ID);
+        articleProjectionMap.put(WorkTimePolicyDataHelper.UUID, WorkTimePolicyDataHelper.UUID);
+        articleProjectionMap.put(WorkTimePolicyDataHelper.NAME, WorkTimePolicyDataHelper.NAME);
+        articleProjectionMap.put(WorkTimePolicyDataHelper.SHORT_NAME, WorkTimePolicyDataHelper.SHORT_NAME);
+        articleProjectionMap.put(WorkTimePolicyDataHelper.TYPE, WorkTimePolicyDataHelper.TYPE);
+        articleProjectionMap.put(WorkTimePolicyDataHelper.CHECK_IN, WorkTimePolicyDataHelper.CHECK_IN);
+        articleProjectionMap.put(WorkTimePolicyDataHelper.LATEST_CHECK_IN, WorkTimePolicyDataHelper.LATEST_CHECK_IN);
+        articleProjectionMap.put(WorkTimePolicyDataHelper.CHECK_OUT, WorkTimePolicyDataHelper.CHECK_OUT);
     }
 
     private DBHelper dbHelper = null;
@@ -78,11 +79,11 @@ public class WorkTimePolicyProvider extends ContentProvider {
     @Override
     public String getType(Uri uri) {
         switch (uriMatcher.match(uri)) {
-            case WorkTimePolicyData.ITEM:
-                return WorkTimePolicyData.CONTENT_TYPE;
-            case WorkTimePolicyData.ITEM_ID:
-            case WorkTimePolicyData.ITEM_POS:
-                return WorkTimePolicyData.CONTENT_ITEM_TYPE;
+            case WorkTimePolicyDataHelper.ITEM:
+                return WorkTimePolicyDataHelper.CONTENT_TYPE;
+            case WorkTimePolicyDataHelper.ITEM_ID:
+            case WorkTimePolicyDataHelper.ITEM_POS:
+                return WorkTimePolicyDataHelper.CONTENT_ITEM_TYPE;
             default:
                 throw new IllegalArgumentException("Error Uri: " + uri);
         }
@@ -90,13 +91,13 @@ public class WorkTimePolicyProvider extends ContentProvider {
 
     @Override
     public Uri insert(Uri uri, ContentValues values) {
-        if (uriMatcher.match(uri) != WorkTimePolicyData.ITEM) {
+        if (uriMatcher.match(uri) != WorkTimePolicyDataHelper.ITEM) {
             throw new IllegalArgumentException("Error Uri: " + uri);
         }
 
         SQLiteDatabase db = dbHelper.getWritableDatabase();
 
-        long id = db.insert(DB_TABLE, WorkTimePolicyData.ID, values);
+        long id = db.insert(DB_TABLE, WorkTimePolicyDataHelper.ID, values);
         if (id < 0) {
             throw new SQLiteException("Unable to insert " + values + " for " + uri);
         }
@@ -113,13 +114,13 @@ public class WorkTimePolicyProvider extends ContentProvider {
         int count = 0;
 
         switch (uriMatcher.match(uri)) {
-            case WorkTimePolicyData.ITEM: {
+            case WorkTimePolicyDataHelper.ITEM: {
                 count = db.update(DB_TABLE, values, selection, selectionArgs);
                 break;
             }
-            case WorkTimePolicyData.ITEM_ID: {
+            case WorkTimePolicyDataHelper.ITEM_ID: {
                 String id = uri.getPathSegments().get(1);
-                count = db.update(DB_TABLE, values, WorkTimePolicyData.ID + "=" + id
+                count = db.update(DB_TABLE, values, WorkTimePolicyDataHelper.ID + "=" + id
                         + (!TextUtils.isEmpty(selection) ? " and (" + selection + ')' : ""), selectionArgs);
                 break;
             }
@@ -138,13 +139,13 @@ public class WorkTimePolicyProvider extends ContentProvider {
         int count = 0;
 
         switch (uriMatcher.match(uri)) {
-            case WorkTimePolicyData.ITEM: {
+            case WorkTimePolicyDataHelper.ITEM: {
                 count = db.delete(DB_TABLE, selection, selectionArgs);
                 break;
             }
-            case WorkTimePolicyData.ITEM_ID: {
+            case WorkTimePolicyDataHelper.ITEM_ID: {
                 String id = uri.getPathSegments().get(1);
-                count = db.delete(DB_TABLE, WorkTimePolicyData.ID + "=" + id
+                count = db.delete(DB_TABLE, WorkTimePolicyDataHelper.ID + "=" + id
                         + (!TextUtils.isEmpty(selection) ? " and (" + selection + ')' : ""), selectionArgs);
                 break;
             }
@@ -167,19 +168,19 @@ public class WorkTimePolicyProvider extends ContentProvider {
         String limit = null;
 
         switch (uriMatcher.match(uri)) {
-            case WorkTimePolicyData.ITEM: {
+            case WorkTimePolicyDataHelper.ITEM: {
                 sqlBuilder.setTables(DB_TABLE);
                 sqlBuilder.setProjectionMap(articleProjectionMap);
                 break;
             }
-            case WorkTimePolicyData.ITEM_ID: {
+            case WorkTimePolicyDataHelper.ITEM_ID: {
                 String id = uri.getPathSegments().get(1);
                 sqlBuilder.setTables(DB_TABLE);
                 sqlBuilder.setProjectionMap(articleProjectionMap);
-                sqlBuilder.appendWhere(WorkTimePolicyData.ID + "=" + id);
+                sqlBuilder.appendWhere(WorkTimePolicyDataHelper.ID + "=" + id);
                 break;
             }
-            case WorkTimePolicyData.ITEM_POS: {
+            case WorkTimePolicyDataHelper.ITEM_POS: {
                 String pos = uri.getPathSegments().get(1);
                 sqlBuilder.setTables(DB_TABLE);
                 sqlBuilder.setProjectionMap(articleProjectionMap);
@@ -190,7 +191,7 @@ public class WorkTimePolicyProvider extends ContentProvider {
                 throw new IllegalArgumentException("Error Uri: " + uri);
         }
 
-        Cursor cursor = sqlBuilder.query(db, projection, selection, selectionArgs, null, null, TextUtils.isEmpty(sortOrder) ? WorkTimePolicyData.DEFAULT_SORT_ORDER : sortOrder, limit);
+        Cursor cursor = sqlBuilder.query(db, projection, selection, selectionArgs, null, null, TextUtils.isEmpty(sortOrder) ? WorkTimePolicyDataHelper.DEFAULT_SORT_ORDER : sortOrder, limit);
         cursor.setNotificationUri(resolver, uri);
 
         return cursor;
@@ -200,7 +201,7 @@ public class WorkTimePolicyProvider extends ContentProvider {
     public Bundle call(String method, String request, Bundle args) {
         Log.i(TAG, KEYWORD + ".call: " + method);
 
-        if (method.equals(WorkTimePolicyData.METHOD_GET_ITEM_COUNT)) {
+        if (method.equals(WorkTimePolicyDataHelper.METHOD_GET_ITEM_COUNT)) {
             return getItemCount();
         }
 
@@ -219,7 +220,7 @@ public class WorkTimePolicyProvider extends ContentProvider {
         }
 
         Bundle bundle = new Bundle();
-        bundle.putInt(WorkTimePolicyData.KEY_ITEM_COUNT, count);
+        bundle.putInt(WorkTimePolicyDataHelper.KEY_ITEM_COUNT, count);
 
         cursor.close();
         db.close();

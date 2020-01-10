@@ -6,7 +6,7 @@ import android.net.Uri;
 import com.sj.attendance.bl.FixWorkTimePolicy;
 import com.sj.attendance.bl.FlexWorkTimePolicy;
 
-public class WorkTimePolicyData {
+public class WorkTimePolicyDataHelper {
     private static final String KEYWORD = "policies";
 
     // 固定工时
@@ -47,23 +47,23 @@ public class WorkTimePolicyData {
     public static final Uri CONTENT_URI = Uri.parse("content://" + AUTHORITY + "/item");
     public static final Uri CONTENT_POS_URI = Uri.parse("content://" + AUTHORITY + "/pos");
 
-    public static ContentValues policyToValues(FixWorkTimePolicy policy) {
+    public static ContentValues toValues(FixWorkTimePolicy policy) {
         ContentValues values = new ContentValues();
         {
-            values.put(WorkTimePolicyData.UUID, policy.getUuid().toString());
+            values.put(WorkTimePolicyDataHelper.UUID, policy.getUuid().toString());
 
-            values.put(WorkTimePolicyData.NAME, policy.getName());
-            values.put(WorkTimePolicyData.SHORT_NAME, policy.getShortName());
+            values.put(WorkTimePolicyDataHelper.NAME, policy.getName());
+            values.put(WorkTimePolicyDataHelper.SHORT_NAME, policy.getShortName());
 
             int type = 0;
             if (policy instanceof FlexWorkTimePolicy) {
                 type = 1;
-                values.put(WorkTimePolicyData.LATEST_CHECK_IN, ((FlexWorkTimePolicy) policy).getLatestCheckInTime());
+                values.put(WorkTimePolicyDataHelper.LATEST_CHECK_IN, ((FlexWorkTimePolicy) policy).getLatestCheckInTime());
             }
 
-            values.put(WorkTimePolicyData.TYPE, type);
-            values.put(WorkTimePolicyData.CHECK_IN, policy.getCheckInTime());
-            values.put(WorkTimePolicyData.CHECK_OUT, policy.getCheckOutTime());
+            values.put(WorkTimePolicyDataHelper.TYPE, type);
+            values.put(WorkTimePolicyDataHelper.CHECK_IN, policy.getCheckInTime());
+            values.put(WorkTimePolicyDataHelper.CHECK_OUT, policy.getCheckOutTime());
         }
         return values;
     }

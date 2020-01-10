@@ -15,14 +15,14 @@ import org.junit.Test;
 
 import java.util.LinkedList;
 
-public class WorkTimePolicyProviderTest extends ProviderTestCase2 {
-    private static final String TAG = WorkTimePolicyProviderTest.class.getSimpleName();
+public class WorkTimePolicyDataProviderTest extends ProviderTestCase2 {
+    private static final String TAG = WorkTimePolicyDataProviderTest.class.getSimpleName();
 
-    public WorkTimePolicyProviderTest() {
-        super(WorkTimePolicyProvider.class, "com.sj.providers.Template");
+    public WorkTimePolicyDataProviderTest() {
+        super(WorkTimePolicyDataProvider.class, "com.sj.attendance.provider.policies");
     }
 
-    public WorkTimePolicyProviderTest(Class providerClass, String providerAuthority) {
+    public WorkTimePolicyDataProviderTest(Class providerClass, String providerAuthority) {
         super(providerClass, providerAuthority);
     }
 
@@ -33,13 +33,13 @@ public class WorkTimePolicyProviderTest extends ProviderTestCase2 {
     }
 
     @Test
-    public void testcase_Insert() {
+    public void testcase_InsertPolicyData() {
         FixWorkTimePolicy policy = WorkTimePolicyFactory.generateFlexPolicy();
 
-        ContentValues values = WorkTimePolicyData.policyToValues(policy);
+        ContentValues values = WorkTimePolicyDataHelper.toValues(policy);
 
         ContentProvider provider = getProvider();
-        Uri uri = provider.insert(WorkTimePolicyData.CONTENT_URI, values);
+        Uri uri = provider.insert(WorkTimePolicyDataHelper.CONTENT_URI, values);
         Log.d(TAG, "uri: " + uri.toString());
 
         String itemId = uri.getPathSegments().get(1);
@@ -49,7 +49,7 @@ public class WorkTimePolicyProviderTest extends ProviderTestCase2 {
     @Test
     public void testcase_Provider() {
         // failed, can't test the authorities.
-        WorkTimePolicyAdapter adapter = new WorkTimePolicyAdapter(getContext());
+        WorkTimePolicyDataAdapter adapter = new WorkTimePolicyDataAdapter(getContext());
 
         adapter.insert(WorkTimePolicyFactory.generateFlexPolicy());
 

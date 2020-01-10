@@ -9,9 +9,16 @@
             android:required="false" />
 
         <provider
-            android:name="com.sj.attendance.provider.WorkTimePolicyProvider"
+            android:name="com.sj.attendance.provider.WorkTimePolicyDataProvider"
             android:authorities="com.sj.attendance.provider.policies"
-            android:label="@string/provider_label"
+            android:label="@string/provider_policy_label"
+            android:multiprocess="false"
+            android:exported="false" />
+
+        <provider
+            android:name="com.sj.attendance.provider.CheckRecordProvider"
+            android:authorities="com.sj.attendance.provider.records"
+            android:label="@string/provider_record_label"
             android:multiprocess="false"
             android:exported="false" />
     </application>

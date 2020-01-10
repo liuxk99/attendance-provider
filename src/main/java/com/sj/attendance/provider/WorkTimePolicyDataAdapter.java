@@ -14,47 +14,47 @@ import com.sj.attendance.bl.FlexWorkTimePolicy;
 import java.util.LinkedList;
 import java.util.UUID;
 
-public class WorkTimePolicyAdapter {
-    private static final String LOG_TAG = WorkTimePolicyAdapter.class.getSimpleName();
+public class WorkTimePolicyDataAdapter {
+    private static final String LOG_TAG = WorkTimePolicyDataAdapter.class.getSimpleName();
 
     private ContentResolver resolver = null;
     private String[] projection = new String[]{
-            WorkTimePolicyData.ID,
-            WorkTimePolicyData.UUID,
-            WorkTimePolicyData.NAME,
-            WorkTimePolicyData.SHORT_NAME,
-            WorkTimePolicyData.TYPE,
-            WorkTimePolicyData.CHECK_IN,
-            WorkTimePolicyData.LATEST_CHECK_IN,
-            WorkTimePolicyData.CHECK_OUT
+            WorkTimePolicyDataHelper.ID,
+            WorkTimePolicyDataHelper.UUID,
+            WorkTimePolicyDataHelper.NAME,
+            WorkTimePolicyDataHelper.SHORT_NAME,
+            WorkTimePolicyDataHelper.TYPE,
+            WorkTimePolicyDataHelper.CHECK_IN,
+            WorkTimePolicyDataHelper.LATEST_CHECK_IN,
+            WorkTimePolicyDataHelper.CHECK_OUT
     };
 
-    public WorkTimePolicyAdapter(Context context) {
+    public WorkTimePolicyDataAdapter(Context context) {
         resolver = context.getContentResolver();
     }
 
     public long insert(FixWorkTimePolicy policy) {
         Log.d(LOG_TAG, "insert(" + policy + ")");
 
-        ContentValues values = WorkTimePolicyData.policyToValues(policy);
+        ContentValues values = WorkTimePolicyDataHelper.toValues(policy);
 
-        Log.d(LOG_TAG, "uri: " + WorkTimePolicyData.CONTENT_URI);
-        Uri uri = resolver.insert(WorkTimePolicyData.CONTENT_URI, values);
+        Log.d(LOG_TAG, "uri: " + WorkTimePolicyDataHelper.CONTENT_URI);
+        Uri uri = resolver.insert(WorkTimePolicyDataHelper.CONTENT_URI, values);
         String itemId = uri.getPathSegments().get(1);
 
         return Integer.valueOf(itemId).longValue();
     }
 
     public boolean update(FixWorkTimePolicy policy) {
-        Uri uri = ContentUris.withAppendedId(WorkTimePolicyData.CONTENT_URI, policy.getId());
-        ContentValues values = WorkTimePolicyData.policyToValues(policy);
+        Uri uri = ContentUris.withAppendedId(WorkTimePolicyDataHelper.CONTENT_URI, policy.getId());
+        ContentValues values = WorkTimePolicyDataHelper.toValues(policy);
         int count = resolver.update(uri, values, null, null);
 
         return count > 0;
     }
 
     public boolean remove(int id) {
-        Uri uri = ContentUris.withAppendedId(WorkTimePolicyData.CONTENT_URI, id);
+        Uri uri = ContentUris.withAppendedId(WorkTimePolicyDataHelper.CONTENT_URI, id);
 
         int count = resolver.delete(uri, null, null);
 
@@ -66,8 +66,8 @@ public class WorkTimePolicyAdapter {
 
         LinkedList<FixWorkTimePolicy> policyList = new LinkedList<FixWorkTimePolicy>();
 
-        Log.d(LOG_TAG, "uri: " + WorkTimePolicyData.CONTENT_URI);
-        Cursor cursor = resolver.query(WorkTimePolicyData.CONTENT_URI, projection, null, null, WorkTimePolicyData.DEFAULT_SORT_ORDER);
+        Log.d(LOG_TAG, "uri: " + WorkTimePolicyDataHelper.CONTENT_URI);
+        Cursor cursor = resolver.query(WorkTimePolicyDataHelper.CONTENT_URI, projection, null, null, WorkTimePolicyDataHelper.DEFAULT_SORT_ORDER);
         if (cursor != null && cursor.moveToFirst()) {
             do {
                 FixWorkTimePolicy policy = generateFromCursor(cursor);
@@ -79,8 +79,8 @@ public class WorkTimePolicyAdapter {
     }
 
     public FixWorkTimePolicy getById(int id) {
-        Uri uri = ContentUris.withAppendedId(WorkTimePolicyData.CONTENT_URI, id);
-        Cursor cursor = resolver.query(uri, projection, null, null, WorkTimePolicyData.DEFAULT_SORT_ORDER);
+        Uri uri = ContentUris.withAppendedId(WorkTimePolicyDataHelper.CONTENT_URI, id);
+        Cursor cursor = resolver.query(uri, projection, null, null, WorkTimePolicyDataHelper.DEFAULT_SORT_ORDER);
 
         Log.i(LOG_TAG, "cursor.moveToFirst");
 
@@ -92,10 +92,10 @@ public class WorkTimePolicyAdapter {
     }
 
     public FixWorkTimePolicy getByPos(int pos) {
-        Uri uri = ContentUris.withAppendedId(WorkTimePolicyData.CONTENT_POS_URI, pos);
+        Uri uri = ContentUris.withAppendedId(WorkTimePolicyDataHelper.CONTENT_POS_URI, pos);
 
 
-        Cursor cursor = resolver.query(uri, projection, null, null, WorkTimePolicyData.DEFAULT_SORT_ORDER);
+        Cursor cursor = resolver.query(uri, projection, null, null, WorkTimePolicyDataHelper.DEFAULT_SORT_ORDER);
         if (!cursor.moveToFirst()) {
             return null;
         }
@@ -115,12 +115,12 @@ public class WorkTimePolicyAdapter {
         long latestCheckIn = cursor.getLong(6);
         long checkOut = cursor.getLong(7);
 
-        if (type == WorkTimePolicyData.POLICY_TYPE_FIX) {
+        if (type == WorkTimePolicyDataHelper.POLICY_TYPE_FIX) {
             FixWorkTimePolicy policy = new FixWorkTimePolicy(name, shortName, checkIn, checkOut);
             policy.setUuid(uuid);
             return policy;
         }
-        if (type == WorkTimePolicyData.POLICY_TYPE_FLEX) {
+        if (type == WorkTimePolicyDataHelper.POLICY_TYPE_FLEX) {
             FlexWorkTimePolicy policy = new FlexWorkTimePolicy(name, shortName, checkIn, latestCheckIn, checkOut);
             policy.setUuid(uuid);
             return policy;
