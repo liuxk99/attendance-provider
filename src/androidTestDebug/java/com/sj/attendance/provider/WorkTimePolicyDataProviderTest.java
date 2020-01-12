@@ -32,8 +32,7 @@ public class WorkTimePolicyDataProviderTest extends ProviderTestCase2 {
         setContext(ApplicationProvider.getApplicationContext());
     }
 
-    @Test
-    public void testcase_InsertPolicyData() {
+    public void testcase_001() {
         FixWorkTimePolicy policy = WorkTimePolicyFactory.generateFlexPolicy();
 
         ContentValues values = WorkTimePolicyDataHelper.toValues(policy);
@@ -46,12 +45,11 @@ public class WorkTimePolicyDataProviderTest extends ProviderTestCase2 {
         Log.d(TAG, "id: " + itemId);
     }
 
-    @Test
-    public void testcase_Provider() {
-        // failed, can't test the authorities.
+    public void testcase_002() {
         WorkTimePolicyDataAdapter adapter = new WorkTimePolicyDataAdapter(getContext());
 
-        adapter.insert(WorkTimePolicyFactory.generateFlexPolicy());
+        long id = adapter.insert(WorkTimePolicyFactory.generateFlexPolicy());
+        Log.i(TAG, "id: " + id);
 
         LinkedList<FixWorkTimePolicy> policyList = adapter.getAll();
         for (FixWorkTimePolicy policy : policyList) {

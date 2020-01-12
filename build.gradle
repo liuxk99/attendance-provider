@@ -6,7 +6,7 @@ android {
 
     defaultConfig {
 //        applicationId "com.sj.attendance.providers"
-        minSdkVersion 14
+        minSdkVersion 19
 //    targetSdkVersion 23
 
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
@@ -26,6 +26,7 @@ android {
 
     dependencies {
         api project(path: ':business-logic')
+        api project(path: ':utils4a')
 
         // Gradle automatically adds 'android.test.runner' as a dependency.
         useLibrary 'android.test.runner'

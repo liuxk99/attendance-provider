@@ -13,19 +13,21 @@ import android.database.sqlite.SQLiteException;
 import android.database.sqlite.SQLiteOpenHelper;
 import android.database.sqlite.SQLiteQueryBuilder;
 import android.net.Uri;
-import android.os.Bundle;
 import android.text.TextUtils;
 import android.util.Log;
+
+import com.sj4a.utils.SjLog;
+import com.sj4a.utils.SjLogGen;
 
 import java.util.HashMap;
 
 public class CheckRecordProvider extends ContentProvider {
-    private static final String TAG = CheckRecordProvider.class.getSimpleName();
-    private static final String KEYWORD = CheckRecordProvider.class.getSimpleName();
+    private static SjLogGen sjLogGen = new SjLogGen(CheckRecordProvider.class.getSimpleName());
 
-    private static final String DB_NAME = Attendance.DB_NAME_PREFIX + ".db";
+    private static final String TAG = CheckRecordProvider.class.getSimpleName();
 
     private static final String PREFIX = "records";
+    private static final String DB_NAME = PREFIX + ".db";
     private static final String DB_TABLE = PREFIX + "Table";
     private static final int DB_VERSION = 1;
 
@@ -35,7 +37,7 @@ public class CheckRecordProvider extends ContentProvider {
             CheckRecordHelper.REAL_CHECK_IN + " text not null, " +
             CheckRecordHelper.REAL_CHECK_OUT + " text not null, " +
             CheckRecordHelper.POLICY_UUID + " text not null "
-            +");";
+            + ");";
 
     private static final UriMatcher uriMatcher;
 
@@ -57,17 +59,19 @@ public class CheckRecordProvider extends ContentProvider {
         articleProjectionMap.put(CheckRecordHelper.POLICY_UUID, CheckRecordHelper.POLICY_UUID);
     }
 
-    private DBHelper dbHelper = null;
+    private CheckRecordDBHelper checkRecordDbHelper = null;
     private ContentResolver resolver = null;
 
     @Override
     public boolean onCreate() {
-        Context context = getContext();
-        resolver = context.getContentResolver();
-        dbHelper = new DBHelper(context, DB_NAME, null, DB_VERSION);
-
-        Log.i(TAG, KEYWORD + "Create");
-
+        SjLog sjLog = sjLogGen.build("onCreate()");
+        sjLog.in();
+        {
+            Context context = getContext();
+            resolver = context.getContentResolver();
+            checkRecordDbHelper = new CheckRecordDBHelper(context, DB_NAME, null, DB_VERSION);
+        }
+        sjLog.out();
         return true;
     }
 
@@ -86,26 +90,34 @@ public class CheckRecordProvider extends ContentProvider {
 
     @Override
     public Uri insert(Uri uri, ContentValues values) {
-        if (uriMatcher.match(uri) != CheckRecordHelper.ITEM) {
-            throw new IllegalArgumentException("Error Uri: " + uri);
+        Uri newUri = null;
+
+        SjLog sjLog = sjLogGen.build("insert(" + uri + ", " + values + ")");
+        sjLog.in();
+        {
+            if (uriMatcher.match(uri) != CheckRecordHelper.ITEM) {
+                throw new IllegalArgumentException("Error Uri: " + uri);
+            }
+
+            SQLiteDatabase db = checkRecordDbHelper.getWritableDatabase();
+            Log.d(TAG, "db.path: " + db.getPath());
+
+            long id = db.insert(DB_TABLE, CheckRecordHelper.ID, values);
+            if (id < 0) {
+                throw new SQLiteException("Unable to insert " + values + " for " + uri);
+            }
+
+            newUri = ContentUris.withAppendedId(uri, id);
+            resolver.notifyChange(newUri, null);
         }
-
-        SQLiteDatabase db = dbHelper.getWritableDatabase();
-
-        long id = db.insert(DB_TABLE, CheckRecordHelper.ID, values);
-        if (id < 0) {
-            throw new SQLiteException("Unable to insert " + values + " for " + uri);
-        }
-
-        Uri newUri = ContentUris.withAppendedId(uri, id);
-        resolver.notifyChange(newUri, null);
+        sjLog.out();
 
         return newUri;
     }
 
     @Override
     public int update(Uri uri, ContentValues values, String selection, String[] selectionArgs) {
-        SQLiteDatabase db = dbHelper.getWritableDatabase();
+        SQLiteDatabase db = checkRecordDbHelper.getWritableDatabase();
         int count = 0;
 
         switch (uriMatcher.match(uri)) {
@@ -130,7 +142,7 @@ public class CheckRecordProvider extends ContentProvider {
 
     @Override
     public int delete(Uri uri, String selection, String[] selectionArgs) {
-        SQLiteDatabase db = dbHelper.getWritableDatabase();
+        SQLiteDatabase db = checkRecordDbHelper.getWritableDatabase();
         int count = 0;
 
         switch (uriMatcher.match(uri)) {
@@ -155,55 +167,71 @@ public class CheckRecordProvider extends ContentProvider {
 
     @Override
     public Cursor query(Uri uri, String[] projection, String selection, String[] selectionArgs, String sortOrder) {
-        Log.i(TAG, KEYWORD + ".query: " + uri);
+        Cursor cursor = null;
 
-        SQLiteDatabase db = dbHelper.getReadableDatabase();
+        SjLog sjLog = sjLogGen.build("query(" + uri + ", " + projection + ", " + selection + ", " + selectionArgs + ", " + sortOrder + ")");
+        sjLog.in();
+        {
+            SQLiteDatabase db = checkRecordDbHelper.getReadableDatabase();
 
-        SQLiteQueryBuilder sqlBuilder = new SQLiteQueryBuilder();
-        String limit = null;
+            SQLiteQueryBuilder sqlBuilder = new SQLiteQueryBuilder();
+            String limit = null;
 
-        switch (uriMatcher.match(uri)) {
-            case CheckRecordHelper.ITEM: {
-                sqlBuilder.setTables(DB_TABLE);
-                sqlBuilder.setProjectionMap(articleProjectionMap);
-                break;
+            switch (uriMatcher.match(uri)) {
+                case CheckRecordHelper.ITEM: {
+                    sqlBuilder.setTables(DB_TABLE);
+                    sqlBuilder.setProjectionMap(articleProjectionMap);
+                    break;
+                }
+                case CheckRecordHelper.ITEM_ID: {
+                    String id = uri.getPathSegments().get(1);
+                    sqlBuilder.setTables(DB_TABLE);
+                    sqlBuilder.setProjectionMap(articleProjectionMap);
+                    sqlBuilder.appendWhere(CheckRecordHelper.ID + "=" + id);
+                    break;
+                }
+                case CheckRecordHelper.ITEM_POS: {
+                    String pos = uri.getPathSegments().get(1);
+                    sqlBuilder.setTables(DB_TABLE);
+                    sqlBuilder.setProjectionMap(articleProjectionMap);
+                    limit = pos + ", 1";
+                    break;
+                }
+                default:
+                    throw new IllegalArgumentException("Error Uri: " + uri);
             }
-            case CheckRecordHelper.ITEM_ID: {
-                String id = uri.getPathSegments().get(1);
-                sqlBuilder.setTables(DB_TABLE);
-                sqlBuilder.setProjectionMap(articleProjectionMap);
-                sqlBuilder.appendWhere(CheckRecordHelper.ID + "=" + id);
-                break;
-            }
-            case CheckRecordHelper.ITEM_POS: {
-                String pos = uri.getPathSegments().get(1);
-                sqlBuilder.setTables(DB_TABLE);
-                sqlBuilder.setProjectionMap(articleProjectionMap);
-                limit = pos + ", 1";
-                break;
-            }
-            default:
-                throw new IllegalArgumentException("Error Uri: " + uri);
+
+            cursor = sqlBuilder.query(db, projection, selection, selectionArgs,
+                    null,
+                    null,
+                    TextUtils.isEmpty(sortOrder) ? CheckRecordHelper.DEFAULT_SORT_ORDER : sortOrder,
+                    limit);
+            cursor.setNotificationUri(resolver, uri);
         }
-
-        Cursor cursor = sqlBuilder.query(db, projection, selection, selectionArgs,
-                null,
-                null,
-                TextUtils.isEmpty(sortOrder) ? CheckRecordHelper.DEFAULT_SORT_ORDER : sortOrder,
-                limit);
-        cursor.setNotificationUri(resolver, uri);
+        sjLog.out();
 
         return cursor;
     }
 
-    private static class DBHelper extends SQLiteOpenHelper {
-        public DBHelper(Context context, String name, CursorFactory factory, int version) {
+    private static class CheckRecordDBHelper extends SQLiteOpenHelper {
+        private static SjLogGen sjLogGen = new SjLogGen(CheckRecordDBHelper.class.getSimpleName());
+
+        CheckRecordDBHelper(Context context, String name, CursorFactory factory, int version) {
             super(context, name, factory, version);
+            SjLog sjLog = sjLogGen.build("CheckRecordDBHelper(" + context + ", " + name + ", " + factory + ", " + version + ")");
+            sjLog.in();
+            sjLog.out();
         }
 
         @Override
         public void onCreate(SQLiteDatabase db) {
-            db.execSQL(DB_CREATE);
+            SjLog sjLog = sjLogGen.build("onCreate(" + db + ")");
+            sjLog.in();
+            {
+                db.execSQL(DB_CREATE);
+                Log.d(TAG, "execSQL(" + DB_CREATE + ")");
+            }
+            sjLog.out();
         }
 
         @Override

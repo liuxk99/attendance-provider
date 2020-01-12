@@ -10,12 +10,15 @@ import android.util.Log;
 
 import com.sj.attendance.bl.FixWorkTimePolicy;
 import com.sj.attendance.bl.FlexWorkTimePolicy;
+import com.sj4a.utils.SjLog;
+import com.sj4a.utils.SjLogGen;
 
 import java.util.LinkedList;
 import java.util.UUID;
 
 public class WorkTimePolicyDataAdapter {
     private static final String LOG_TAG = WorkTimePolicyDataAdapter.class.getSimpleName();
+    private static SjLogGen sjLogGen = new SjLogGen(WorkTimePolicyDataAdapter.class.getSimpleName());
 
     private ContentResolver resolver = null;
     private String[] projection = new String[]{
@@ -34,15 +37,20 @@ public class WorkTimePolicyDataAdapter {
     }
 
     public long insert(FixWorkTimePolicy policy) {
-        Log.d(LOG_TAG, "insert(" + policy + ")");
+        long res = -1L;
 
-        ContentValues values = WorkTimePolicyDataHelper.toValues(policy);
+        SjLog sjLog = sjLogGen.build("insert(" + policy + ")");
+        sjLog.in();
+        {
+            ContentValues values = WorkTimePolicyDataHelper.toValues(policy);
 
-        Log.d(LOG_TAG, "uri: " + WorkTimePolicyDataHelper.CONTENT_URI);
-        Uri uri = resolver.insert(WorkTimePolicyDataHelper.CONTENT_URI, values);
-        String itemId = uri.getPathSegments().get(1);
-
-        return Integer.valueOf(itemId).longValue();
+            Log.d(LOG_TAG, "uri: " + WorkTimePolicyDataHelper.CONTENT_URI);
+            Uri uri = resolver.insert(WorkTimePolicyDataHelper.CONTENT_URI, values);
+            String itemId = uri.getPathSegments().get(1);
+            res = Integer.valueOf(itemId).longValue();
+        }
+        sjLog.out();
+        return res;
     }
 
     public boolean update(FixWorkTimePolicy policy) {

@@ -17,15 +17,19 @@ import android.os.Bundle;
 import android.text.TextUtils;
 import android.util.Log;
 
+import com.sj4a.utils.SjLog;
+import com.sj4a.utils.SjLogGen;
+
 import java.util.HashMap;
 
 public class WorkTimePolicyDataProvider extends ContentProvider {
+    private static SjLogGen sjLogGen = new SjLogGen(WorkTimePolicyDataProvider.class.getSimpleName());
+
     private static final String TAG = WorkTimePolicyDataProvider.class.getSimpleName();
     private static final String KEYWORD = WorkTimePolicyDataProvider.class.getSimpleName();
 
-    private static final String DB_NAME = Attendance.DB_NAME_PREFIX + ".db";
-
-    private static final String PREFIX = "policy";
+    private static final String PREFIX = "policies";
+    private static final String DB_NAME = PREFIX + ".db";
     private static final String DB_TABLE = PREFIX + "Table";
     private static final int DB_VERSION = 1;
 
@@ -62,16 +66,19 @@ public class WorkTimePolicyDataProvider extends ContentProvider {
         articleProjectionMap.put(WorkTimePolicyDataHelper.CHECK_OUT, WorkTimePolicyDataHelper.CHECK_OUT);
     }
 
-    private DBHelper dbHelper = null;
+    private PolicyDBHelper policyDbHelper = null;
     private ContentResolver resolver = null;
 
     @Override
     public boolean onCreate() {
-        Context context = getContext();
-        resolver = context.getContentResolver();
-        dbHelper = new DBHelper(context, DB_NAME, null, DB_VERSION);
-
-        Log.i(TAG, KEYWORD + "Create");
+        SjLog sjLog = sjLogGen.build("onCreate()");
+        sjLog.in();
+        {
+            Context context = getContext();
+            resolver = context.getContentResolver();
+            policyDbHelper = new PolicyDBHelper(context, DB_NAME, null, DB_VERSION);
+        }
+        sjLog.out();
 
         return true;
     }
@@ -91,26 +98,34 @@ public class WorkTimePolicyDataProvider extends ContentProvider {
 
     @Override
     public Uri insert(Uri uri, ContentValues values) {
-        if (uriMatcher.match(uri) != WorkTimePolicyDataHelper.ITEM) {
-            throw new IllegalArgumentException("Error Uri: " + uri);
+        Uri newUri = null;
+
+        SjLog sjLog = sjLogGen.build("insert(" + uri + ", " + values + ")");
+        sjLog.in();
+        {
+            if (uriMatcher.match(uri) != WorkTimePolicyDataHelper.ITEM) {
+                throw new IllegalArgumentException("Error Uri: " + uri);
+            }
+
+            SQLiteDatabase db = policyDbHelper.getWritableDatabase();
+            Log.d(TAG, "db.path: " + db.getPath());
+
+            long id = db.insert(DB_TABLE, WorkTimePolicyDataHelper.ID, values);
+            if (id < 0) {
+                throw new SQLiteException("Unable to insert " + values + " for " + uri);
+            }
+
+            newUri = ContentUris.withAppendedId(uri, id);
+            resolver.notifyChange(newUri, null);
         }
-
-        SQLiteDatabase db = dbHelper.getWritableDatabase();
-
-        long id = db.insert(DB_TABLE, WorkTimePolicyDataHelper.ID, values);
-        if (id < 0) {
-            throw new SQLiteException("Unable to insert " + values + " for " + uri);
-        }
-
-        Uri newUri = ContentUris.withAppendedId(uri, id);
-        resolver.notifyChange(newUri, null);
+        sjLog.out();
 
         return newUri;
     }
 
     @Override
     public int update(Uri uri, ContentValues values, String selection, String[] selectionArgs) {
-        SQLiteDatabase db = dbHelper.getWritableDatabase();
+        SQLiteDatabase db = policyDbHelper.getWritableDatabase();
         int count = 0;
 
         switch (uriMatcher.match(uri)) {
@@ -135,7 +150,7 @@ public class WorkTimePolicyDataProvider extends ContentProvider {
 
     @Override
     public int delete(Uri uri, String selection, String[] selectionArgs) {
-        SQLiteDatabase db = dbHelper.getWritableDatabase();
+        SQLiteDatabase db = policyDbHelper.getWritableDatabase();
         int count = 0;
 
         switch (uriMatcher.match(uri)) {
@@ -160,82 +175,67 @@ public class WorkTimePolicyDataProvider extends ContentProvider {
 
     @Override
     public Cursor query(Uri uri, String[] projection, String selection, String[] selectionArgs, String sortOrder) {
-        Log.i(TAG, KEYWORD + ".query: " + uri);
+        Cursor cursor = null;
 
-        SQLiteDatabase db = dbHelper.getReadableDatabase();
+        SjLog sjLog = sjLogGen.build("query("+uri+", "+projection+", "+selection+", "+selectionArgs+", "+sortOrder+")");
+        sjLog.in();
+        {
+            SQLiteDatabase db = policyDbHelper.getReadableDatabase();
 
-        SQLiteQueryBuilder sqlBuilder = new SQLiteQueryBuilder();
-        String limit = null;
+            SQLiteQueryBuilder sqlBuilder = new SQLiteQueryBuilder();
+            String limit = null;
 
-        switch (uriMatcher.match(uri)) {
-            case WorkTimePolicyDataHelper.ITEM: {
-                sqlBuilder.setTables(DB_TABLE);
-                sqlBuilder.setProjectionMap(articleProjectionMap);
-                break;
+            switch (uriMatcher.match(uri)) {
+                case WorkTimePolicyDataHelper.ITEM: {
+                    sqlBuilder.setTables(DB_TABLE);
+                    sqlBuilder.setProjectionMap(articleProjectionMap);
+                    break;
+                }
+                case WorkTimePolicyDataHelper.ITEM_ID: {
+                    String id = uri.getPathSegments().get(1);
+                    sqlBuilder.setTables(DB_TABLE);
+                    sqlBuilder.setProjectionMap(articleProjectionMap);
+                    sqlBuilder.appendWhere(WorkTimePolicyDataHelper.ID + "=" + id);
+                    break;
+                }
+                case WorkTimePolicyDataHelper.ITEM_POS: {
+                    String pos = uri.getPathSegments().get(1);
+                    sqlBuilder.setTables(DB_TABLE);
+                    sqlBuilder.setProjectionMap(articleProjectionMap);
+                    limit = pos + ", 1";
+                    break;
+                }
+                default:
+                    throw new IllegalArgumentException("Error Uri: " + uri);
             }
-            case WorkTimePolicyDataHelper.ITEM_ID: {
-                String id = uri.getPathSegments().get(1);
-                sqlBuilder.setTables(DB_TABLE);
-                sqlBuilder.setProjectionMap(articleProjectionMap);
-                sqlBuilder.appendWhere(WorkTimePolicyDataHelper.ID + "=" + id);
-                break;
-            }
-            case WorkTimePolicyDataHelper.ITEM_POS: {
-                String pos = uri.getPathSegments().get(1);
-                sqlBuilder.setTables(DB_TABLE);
-                sqlBuilder.setProjectionMap(articleProjectionMap);
-                limit = pos + ", 1";
-                break;
-            }
-            default:
-                throw new IllegalArgumentException("Error Uri: " + uri);
+
+            cursor = sqlBuilder.query(db, projection, selection, selectionArgs, null, null, TextUtils.isEmpty(sortOrder) ? WorkTimePolicyDataHelper.DEFAULT_SORT_ORDER : sortOrder, limit);
+            cursor.setNotificationUri(resolver, uri);
         }
-
-        Cursor cursor = sqlBuilder.query(db, projection, selection, selectionArgs, null, null, TextUtils.isEmpty(sortOrder) ? WorkTimePolicyDataHelper.DEFAULT_SORT_ORDER : sortOrder, limit);
-        cursor.setNotificationUri(resolver, uri);
+        sjLog.out();
 
         return cursor;
     }
 
-    @Override
-    public Bundle call(String method, String request, Bundle args) {
-        Log.i(TAG, KEYWORD + ".call: " + method);
+    private static class PolicyDBHelper extends SQLiteOpenHelper {
+        private static SjLogGen sjLogGen = new SjLogGen(PolicyDBHelper.class.getSimpleName());
 
-        if (method.equals(WorkTimePolicyDataHelper.METHOD_GET_ITEM_COUNT)) {
-            return getItemCount();
-        }
-
-        throw new IllegalArgumentException("Error method call: " + method);
-    }
-
-    private Bundle getItemCount() {
-        Log.i(TAG, KEYWORD + ".getItemCount");
-
-        SQLiteDatabase db = dbHelper.getReadableDatabase();
-        Cursor cursor = db.rawQuery("select count(*) from " + DB_TABLE, null);
-
-        int count = 0;
-        if (cursor.moveToFirst()) {
-            count = cursor.getInt(0);
-        }
-
-        Bundle bundle = new Bundle();
-        bundle.putInt(WorkTimePolicyDataHelper.KEY_ITEM_COUNT, count);
-
-        cursor.close();
-        db.close();
-
-        return bundle;
-    }
-
-    private static class DBHelper extends SQLiteOpenHelper {
-        public DBHelper(Context context, String name, CursorFactory factory, int version) {
+        PolicyDBHelper(Context context, String name, CursorFactory factory, int version) {
             super(context, name, factory, version);
+            SjLog sjLog = sjLogGen.build("PolicyDBHelper(" + context + ", " + name + ", " + factory + ", " + version + ")");
+            sjLog.in();
+            sjLog.out();
         }
 
         @Override
         public void onCreate(SQLiteDatabase db) {
-            db.execSQL(DB_CREATE);
+            SjLog sjLog = sjLogGen.build("onCreate(" + db + ")");
+            sjLog.in();
+            {
+                db.execSQL(DB_CREATE);
+                Log.d(TAG, "execSQL(" + DB_CREATE + ")");
+            }
+            sjLog.out();
         }
 
         @Override

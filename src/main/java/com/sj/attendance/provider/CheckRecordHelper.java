@@ -38,7 +38,7 @@ public class CheckRecordHelper {
     public static ContentValues toValues(CheckRecord recordInfo) {
         ContentValues values = new ContentValues();
         {
-            values.put(CheckRecordHelper.UUID, recordInfo.getUuid().toString());
+            values.put(UUID, recordInfo.getUuid().toString());
             values.put(REAL_CHECK_IN, TimeUtils.toISO8601(recordInfo.realCheckInTime));
             values.put(REAL_CHECK_OUT, TimeUtils.toISO8601(recordInfo.realCheckOutTime));
 

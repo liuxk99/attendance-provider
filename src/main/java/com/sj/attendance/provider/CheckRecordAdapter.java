@@ -11,6 +11,8 @@ import android.util.Log;
 import com.sj.attendance.bl.CheckRecord;
 import com.sj.attendance.bl.FixWorkTimePolicy;
 import com.sj.attendance.bl.TimeUtils;
+import com.sj4a.utils.SjLog;
+import com.sj4a.utils.SjLogGen;
 
 import java.text.ParseException;
 import java.util.Date;
@@ -18,6 +20,8 @@ import java.util.LinkedList;
 import java.util.UUID;
 
 public class CheckRecordAdapter {
+    private static SjLogGen sjLogGen = new SjLogGen(CheckRecordAdapter.class.getSimpleName());
+
     private static final String LOG_TAG = CheckRecordAdapter.class.getSimpleName();
 
     private ContentResolver resolver = null;
@@ -33,16 +37,21 @@ public class CheckRecordAdapter {
         resolver = context.getContentResolver();
     }
 
-    public long insert(CheckRecord info) {
-        Log.d(LOG_TAG, "insert(" + info + ")");
+    public long insert(CheckRecord checkRecord) {
+        long res = -1L;
+        SjLog log = sjLogGen.build("insert(" + checkRecord + ")");
+        log.in();
+        {
+            ContentValues values = CheckRecordHelper.toValues(checkRecord);
 
-        ContentValues values = CheckRecordHelper.toValues(info);
+            Log.d(LOG_TAG, "uri: " + CheckRecordHelper.CONTENT_URI);
+            Uri uri = resolver.insert(CheckRecordHelper.CONTENT_URI, values);
+            String itemId = uri.getPathSegments().get(1);
+            res = Integer.valueOf(itemId).longValue();
+        }
+        log.out();
 
-        Log.d(LOG_TAG, "uri: " + CheckRecordHelper.CONTENT_URI);
-        Uri uri = resolver.insert(CheckRecordHelper.CONTENT_URI, values);
-        String itemId = uri.getPathSegments().get(1);
-
-        return Integer.valueOf(itemId).longValue();
+        return res;
     }
 
     public boolean update(CheckRecord recordInfo) {
@@ -130,7 +139,7 @@ public class CheckRecordAdapter {
             str = cursor.getString(4);
             UUID policyUuid = UUID.fromString(str);
 
-            FixWorkTimePolicy policy = Attendance.findPolicyByUuid(uuid);
+            FixWorkTimePolicy policy = Attendance.findPolicyByUuid(policyUuid);
             recordInfo = new CheckRecord("", policy, realCheckIn, realCheckOut);
             recordInfo.setId(id);
             recordInfo.setUuid(uuid);
