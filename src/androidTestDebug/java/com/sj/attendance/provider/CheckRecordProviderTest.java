@@ -61,7 +61,7 @@ public class CheckRecordProviderTest extends ProviderTestCase2 {
         Log.d(TAG, "id: " + itemId);
     }
 
-    public void testcase_CheckRecord_002() {
+    public void testcase_002() {
         CheckRecordAdapter adapter = new CheckRecordAdapter(getContext());
         long id = adapter.insert(generateCheckRecord());
         Log.i(TAG, "id: " + id);

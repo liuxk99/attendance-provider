@@ -16,6 +16,7 @@ public class CheckRecordHelper {
     public static final String REAL_CHECK_OUT = "_real_check_out";
 
     public static final String POLICY_UUID = "_policy_uuid";
+    public static final String POLICY_SET_NAME = "_policy_set_name";
     /*Default sort order*/
     public static final String DEFAULT_SORT_ORDER = "_id asc";
 
@@ -43,6 +44,7 @@ public class CheckRecordHelper {
             values.put(REAL_CHECK_OUT, TimeUtils.toISO8601(recordInfo.realCheckOutTime));
 
             values.put(POLICY_UUID, recordInfo.policy.getUuid().toString());
+            values.put(POLICY_SET_NAME, recordInfo.policySetName);
         }
         return values;
     }

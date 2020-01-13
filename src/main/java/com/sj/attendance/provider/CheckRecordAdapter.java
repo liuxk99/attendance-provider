@@ -17,6 +17,7 @@ import com.sj4a.utils.SjLogGen;
 import java.text.ParseException;
 import java.util.Date;
 import java.util.LinkedList;
+import java.util.List;
 import java.util.UUID;
 
 public class CheckRecordAdapter {
@@ -31,6 +32,7 @@ public class CheckRecordAdapter {
             CheckRecordHelper.REAL_CHECK_IN,
             CheckRecordHelper.REAL_CHECK_OUT,
             CheckRecordHelper.POLICY_UUID,
+            CheckRecordHelper.POLICY_SET_NAME,
     };
 
     public CheckRecordAdapter(Context context) {
@@ -70,10 +72,10 @@ public class CheckRecordAdapter {
         return count > 0;
     }
 
-    public LinkedList<CheckRecord> getAll() {
+    public List<CheckRecord> getAll() {
         Log.d(LOG_TAG, "getAll()");
 
-        LinkedList<CheckRecord> recordList = new LinkedList<>();
+        List<CheckRecord> recordList = new LinkedList<>();
 
         Log.d(LOG_TAG, "uri: " + CheckRecordHelper.CONTENT_URI);
         Cursor cursor = resolver.query(CheckRecordHelper.CONTENT_URI, projection, null, null, CheckRecordHelper.DEFAULT_SORT_ORDER);
@@ -87,7 +89,7 @@ public class CheckRecordAdapter {
         return recordList;
     }
 
-    public CheckRecord getById(int id) {
+    public CheckRecord getById(long id) {
         Uri uri = ContentUris.withAppendedId(CheckRecordHelper.CONTENT_URI, id);
         Cursor cursor = resolver.query(uri, projection, null, null, CheckRecordHelper.DEFAULT_SORT_ORDER);
 
@@ -100,7 +102,7 @@ public class CheckRecordAdapter {
         return generateFromCursor(cursor);
     }
 
-    public CheckRecord getByPos(int pos) {
+    public CheckRecord getByPos(long pos) {
         Uri uri = ContentUris.withAppendedId(CheckRecordHelper.CONTENT_POS_URI, pos);
 
 
@@ -139,8 +141,11 @@ public class CheckRecordAdapter {
             str = cursor.getString(4);
             UUID policyUuid = UUID.fromString(str);
 
+            // policy_set_name
+            str = cursor.getString(5);
+
             FixWorkTimePolicy policy = Attendance.findPolicyByUuid(policyUuid);
-            recordInfo = new CheckRecord("", policy, realCheckIn, realCheckOut);
+            recordInfo = new CheckRecord(str, policy, realCheckIn, realCheckOut);
             recordInfo.setId(id);
             recordInfo.setUuid(uuid);
         }

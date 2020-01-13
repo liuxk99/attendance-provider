@@ -14,6 +14,7 @@ import com.sj4a.utils.SjLog;
 import com.sj4a.utils.SjLogGen;
 
 import java.util.LinkedList;
+import java.util.List;
 import java.util.UUID;
 
 public class WorkTimePolicyDataAdapter {
@@ -69,10 +70,10 @@ public class WorkTimePolicyDataAdapter {
         return count > 0;
     }
 
-    public LinkedList<FixWorkTimePolicy> getAll() {
+    public List<FixWorkTimePolicy> getAll() {
         Log.d(LOG_TAG, "getAll()");
 
-        LinkedList<FixWorkTimePolicy> policyList = new LinkedList<FixWorkTimePolicy>();
+        List<FixWorkTimePolicy> policyList = new LinkedList<FixWorkTimePolicy>();
 
         Log.d(LOG_TAG, "uri: " + WorkTimePolicyDataHelper.CONTENT_URI);
         Cursor cursor = resolver.query(WorkTimePolicyDataHelper.CONTENT_URI, projection, null, null, WorkTimePolicyDataHelper.DEFAULT_SORT_ORDER);
@@ -86,7 +87,7 @@ public class WorkTimePolicyDataAdapter {
         return policyList;
     }
 
-    public FixWorkTimePolicy getById(int id) {
+    public FixWorkTimePolicy getById(long id) {
         Uri uri = ContentUris.withAppendedId(WorkTimePolicyDataHelper.CONTENT_URI, id);
         Cursor cursor = resolver.query(uri, projection, null, null, WorkTimePolicyDataHelper.DEFAULT_SORT_ORDER);
 
@@ -99,7 +100,7 @@ public class WorkTimePolicyDataAdapter {
         return generateFromCursor(cursor);
     }
 
-    public FixWorkTimePolicy getByPos(int pos) {
+    public FixWorkTimePolicy getByPos(long pos) {
         Uri uri = ContentUris.withAppendedId(WorkTimePolicyDataHelper.CONTENT_POS_URI, pos);
 
 

@@ -36,7 +36,8 @@ public class CheckRecordProvider extends ContentProvider {
             CheckRecordHelper.UUID + " text not null, " +
             CheckRecordHelper.REAL_CHECK_IN + " text not null, " +
             CheckRecordHelper.REAL_CHECK_OUT + " text not null, " +
-            CheckRecordHelper.POLICY_UUID + " text not null "
+            CheckRecordHelper.POLICY_UUID + " text not null, " +
+            CheckRecordHelper.POLICY_SET_NAME + " text not null "
             + ");";
 
     private static final UriMatcher uriMatcher;
@@ -48,15 +49,16 @@ public class CheckRecordProvider extends ContentProvider {
         uriMatcher.addURI(CheckRecordHelper.AUTHORITY, "pos/#", CheckRecordHelper.ITEM_POS);
     }
 
-    private static final HashMap<String, String> articleProjectionMap;
+    private static final HashMap<String, String> projectionMap;
 
     static {
-        articleProjectionMap = new HashMap<>();
-        articleProjectionMap.put(CheckRecordHelper.ID, CheckRecordHelper.ID);
-        articleProjectionMap.put(CheckRecordHelper.UUID, CheckRecordHelper.UUID);
-        articleProjectionMap.put(CheckRecordHelper.REAL_CHECK_IN, CheckRecordHelper.REAL_CHECK_IN);
-        articleProjectionMap.put(CheckRecordHelper.REAL_CHECK_OUT, CheckRecordHelper.REAL_CHECK_OUT);
-        articleProjectionMap.put(CheckRecordHelper.POLICY_UUID, CheckRecordHelper.POLICY_UUID);
+        projectionMap = new HashMap<>();
+        projectionMap.put(CheckRecordHelper.ID, CheckRecordHelper.ID);
+        projectionMap.put(CheckRecordHelper.UUID, CheckRecordHelper.UUID);
+        projectionMap.put(CheckRecordHelper.REAL_CHECK_IN, CheckRecordHelper.REAL_CHECK_IN);
+        projectionMap.put(CheckRecordHelper.REAL_CHECK_OUT, CheckRecordHelper.REAL_CHECK_OUT);
+        projectionMap.put(CheckRecordHelper.POLICY_UUID, CheckRecordHelper.POLICY_UUID);
+        projectionMap.put(CheckRecordHelper.POLICY_SET_NAME, CheckRecordHelper.POLICY_SET_NAME);
     }
 
     private CheckRecordDBHelper checkRecordDbHelper = null;
@@ -180,20 +182,20 @@ public class CheckRecordProvider extends ContentProvider {
             switch (uriMatcher.match(uri)) {
                 case CheckRecordHelper.ITEM: {
                     sqlBuilder.setTables(DB_TABLE);
-                    sqlBuilder.setProjectionMap(articleProjectionMap);
+                    sqlBuilder.setProjectionMap(projectionMap);
                     break;
                 }
                 case CheckRecordHelper.ITEM_ID: {
                     String id = uri.getPathSegments().get(1);
                     sqlBuilder.setTables(DB_TABLE);
-                    sqlBuilder.setProjectionMap(articleProjectionMap);
+                    sqlBuilder.setProjectionMap(projectionMap);
                     sqlBuilder.appendWhere(CheckRecordHelper.ID + "=" + id);
                     break;
                 }
                 case CheckRecordHelper.ITEM_POS: {
                     String pos = uri.getPathSegments().get(1);
                     sqlBuilder.setTables(DB_TABLE);
-                    sqlBuilder.setProjectionMap(articleProjectionMap);
+                    sqlBuilder.setProjectionMap(projectionMap);
                     limit = pos + ", 1";
                     break;
                 }
