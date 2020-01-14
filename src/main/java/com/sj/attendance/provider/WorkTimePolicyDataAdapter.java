@@ -125,12 +125,12 @@ public class WorkTimePolicyDataAdapter {
         long checkOut = cursor.getLong(7);
 
         if (type == WorkTimePolicyDataHelper.POLICY_TYPE_FIX) {
-            FixWorkTimePolicy policy = new FixWorkTimePolicy(name, shortName, checkIn, checkOut);
+            FixWorkTimePolicy policy = new FixWorkTimePolicy(name, shortName, checkIn, checkOut - checkIn);
             policy.setUuid(uuid);
             return policy;
         }
         if (type == WorkTimePolicyDataHelper.POLICY_TYPE_FLEX) {
-            FlexWorkTimePolicy policy = new FlexWorkTimePolicy(name, shortName, checkIn, latestCheckIn, checkOut);
+            FlexWorkTimePolicy policy = new FlexWorkTimePolicy(name, shortName, checkIn, latestCheckIn, checkOut - checkIn);
             policy.setUuid(uuid);
             return policy;
         }
