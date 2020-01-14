@@ -40,7 +40,7 @@ public class CheckRecordAdapter {
     }
 
     public long insert(CheckRecord checkRecord) {
-        long res = -1L;
+        long id = -1L;
         SjLog log = sjLogGen.build("insert(" + checkRecord + ")");
         log.in();
         {
@@ -49,11 +49,12 @@ public class CheckRecordAdapter {
             Log.d(LOG_TAG, "uri: " + CheckRecordHelper.CONTENT_URI);
             Uri uri = resolver.insert(CheckRecordHelper.CONTENT_URI, values);
             String itemId = uri.getPathSegments().get(1);
-            res = Integer.valueOf(itemId).longValue();
+            id = Integer.valueOf(itemId).longValue();
+            checkRecord.setId(id);
         }
         log.out();
 
-        return res;
+        return id;
     }
 
     public boolean update(CheckRecord recordInfo) {

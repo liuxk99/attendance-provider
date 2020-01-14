@@ -15,6 +15,7 @@ import com.sj.attendance.bl.WorkTimePolicyFactory;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.LinkedList;
+import java.util.List;
 
 public class CheckRecordProviderTest extends ProviderTestCase2 {
     private static final String TAG = CheckRecordProviderTest.class.getSimpleName();
@@ -66,8 +67,8 @@ public class CheckRecordProviderTest extends ProviderTestCase2 {
         long id = adapter.insert(generateCheckRecord());
         Log.i(TAG, "id: " + id);
 
-        LinkedList<CheckRecord> checkRecordLinkedList = adapter.getAll();
-        for (CheckRecord checkRecord : checkRecordLinkedList) {
+        List<CheckRecord> checkRecordList = adapter.getAll();
+        for (CheckRecord checkRecord : checkRecordList) {
             Log.d(TAG, checkRecord.toString());
         }
 
