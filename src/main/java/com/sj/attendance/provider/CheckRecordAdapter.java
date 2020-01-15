@@ -26,7 +26,7 @@ public class CheckRecordAdapter {
     private static final String LOG_TAG = CheckRecordAdapter.class.getSimpleName();
 
     private ContentResolver resolver = null;
-    private String[] projection = new String[]{
+    private String[] projection = new String[] {
             CheckRecordHelper.ID,
             CheckRecordHelper.UUID,
             CheckRecordHelper.REAL_CHECK_IN,
@@ -152,4 +152,6 @@ public class CheckRecordAdapter {
         }
         return recordInfo;
     }
+
+    WorkTimePolicyDataAdapter policyDataAdapter;
 }

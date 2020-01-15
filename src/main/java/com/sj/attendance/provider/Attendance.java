@@ -10,13 +10,28 @@ import java.util.List;
 import java.util.UUID;
 
 public class Attendance {
+    static List<FixWorkTimePolicy> workTimePolicyList = new ArrayList<>();
+    private static Attendance instance;
+    private static WorkTimePolicyDataAdapter policyDataAdapter;
+    private static CheckRecordAdapter checkRecordAdapter;
     final String TAG = Attendance.class.getSimpleName();
 
-    static List<FixWorkTimePolicy> workTimePolicyList = new ArrayList<>();
+    public List<CheckRecord> getCheckRecordList() {
+        return checkRecordList;
+    }
+
+    private List<CheckRecord> checkRecordList;
+
+    public static Attendance getInstance() {
+        if (instance == null) {
+            instance = new Attendance();
+        }
+        return instance;
+    }
 
     static FixWorkTimePolicy findPolicyByUuid(UUID uuid) {
         FixWorkTimePolicy workTimePolicy = null;
-        for (FixWorkTimePolicy policy: workTimePolicyList) {
+        for (FixWorkTimePolicy policy : workTimePolicyList) {
             if (policy.getUuid().equals(uuid)) {
                 workTimePolicy = policy;
                 break;
@@ -25,11 +40,31 @@ public class Attendance {
         return workTimePolicy;
     }
 
-    public static List<CheckRecord> init(Context context) {
-        WorkTimePolicyDataAdapter policyDataAdapter = new WorkTimePolicyDataAdapter(context);
-        workTimePolicyList = policyDataAdapter.getAll();
+    public static List<FixWorkTimePolicy> getWorkTimePolicyList() {
+        return workTimePolicyList;
+    }
 
-        CheckRecordAdapter checkRecordAdapter = new CheckRecordAdapter(context);
-        return checkRecordAdapter.getAll();
+    public void init(Context context) {
+        policyDataAdapter = new WorkTimePolicyDataAdapter(context);
+
+        checkRecordAdapter = new CheckRecordAdapter(context);
+    }
+
+    public void reload() {
+        workTimePolicyList = policyDataAdapter.getAll();
+        checkRecordList = checkRecordAdapter.getAll();
+    }
+
+    public void save(CheckRecord checkRecord) {
+        if (!workTimePolicyList.contains(checkRecord.policy)) {
+            policyDataAdapter.insert(checkRecord.policy);
+        }
+        if (checkRecord.getId() < 0) {
+            long id = checkRecordAdapter.insert(checkRecord);
+            checkRecord.setId(id);
+        } else {
+            checkRecordAdapter.update(checkRecord);
+        }
+        reload();
     }
 }
