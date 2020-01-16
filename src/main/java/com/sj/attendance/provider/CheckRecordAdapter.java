@@ -9,16 +9,11 @@ import android.net.Uri;
 import android.util.Log;
 
 import com.sj.attendance.bl.CheckRecord;
-import com.sj.attendance.bl.FixWorkTimePolicy;
-import com.sj.attendance.bl.TimeUtils;
 import com.sj4a.utils.SjLog;
 import com.sj4a.utils.SjLogGen;
 
-import java.text.ParseException;
-import java.util.Date;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.UUID;
 
 public class CheckRecordAdapter {
     private static SjLogGen sjLogGen = new SjLogGen(CheckRecordAdapter.class.getSimpleName());
@@ -82,7 +77,7 @@ public class CheckRecordAdapter {
         Cursor cursor = resolver.query(CheckRecordHelper.CONTENT_URI, projection, null, null, CheckRecordHelper.DEFAULT_SORT_ORDER);
         if (cursor != null && cursor.moveToFirst()) {
             do {
-                CheckRecord policy = generateFromCursor(cursor);
+                CheckRecord policy = CheckRecordHelper.generateFromCursor(cursor);
                 recordList.add(policy);
             } while (cursor.moveToNext());
         }
@@ -100,7 +95,7 @@ public class CheckRecordAdapter {
             return null;
         }
 
-        return generateFromCursor(cursor);
+        return CheckRecordHelper.generateFromCursor(cursor);
     }
 
     public CheckRecord getByPos(long pos) {
@@ -112,46 +107,7 @@ public class CheckRecordAdapter {
             return null;
         }
 
-        return generateFromCursor(cursor);
+        return CheckRecordHelper.generateFromCursor(cursor);
     }
 
-    private CheckRecord generateFromCursor(Cursor cursor) {
-        CheckRecord recordInfo = null;
-        {
-            int id = cursor.getInt(0);
-
-            String str = cursor.getString(1);
-            UUID uuid = UUID.fromString(str);
-
-            str = cursor.getString(2);
-            Date realCheckIn = null;
-            try {
-                realCheckIn = TimeUtils.fromISO8601(str);
-            } catch (ParseException e) {
-                e.printStackTrace();
-            }
-
-            str = cursor.getString(3);
-            Date realCheckOut = null;
-            try {
-                realCheckOut = TimeUtils.fromISO8601(str);
-            } catch (ParseException e) {
-                e.printStackTrace();
-            }
-
-            str = cursor.getString(4);
-            UUID policyUuid = UUID.fromString(str);
-
-            // policy_set_name
-            str = cursor.getString(5);
-
-            FixWorkTimePolicy policy = Attendance.findPolicyByUuid(policyUuid);
-            recordInfo = new CheckRecord(str, policy, realCheckIn, realCheckOut);
-            recordInfo.setId(id);
-            recordInfo.setUuid(uuid);
-        }
-        return recordInfo;
-    }
-
-    WorkTimePolicyDataAdapter policyDataAdapter;
 }

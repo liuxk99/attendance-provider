@@ -14,6 +14,7 @@ import com.sj.attendance.bl.WorkTimePolicyFactory;
 import org.junit.Test;
 
 import java.util.LinkedList;
+import java.util.List;
 
 public class WorkTimePolicyDataProviderTest extends ProviderTestCase2 {
     private static final String TAG = WorkTimePolicyDataProviderTest.class.getSimpleName();
@@ -51,7 +52,7 @@ public class WorkTimePolicyDataProviderTest extends ProviderTestCase2 {
         long id = adapter.insert(WorkTimePolicyFactory.generateFlexPolicy());
         Log.i(TAG, "id: " + id);
 
-        LinkedList<FixWorkTimePolicy> policyList = adapter.getAll();
+        List<FixWorkTimePolicy> policyList = adapter.getAll();
         for (FixWorkTimePolicy policy : policyList) {
             Log.d(TAG, policy.toString());
         }

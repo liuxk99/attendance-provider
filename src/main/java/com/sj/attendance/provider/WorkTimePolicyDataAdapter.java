@@ -9,13 +9,11 @@ import android.net.Uri;
 import android.util.Log;
 
 import com.sj.attendance.bl.FixWorkTimePolicy;
-import com.sj.attendance.bl.FlexWorkTimePolicy;
 import com.sj4a.utils.SjLog;
 import com.sj4a.utils.SjLogGen;
 
 import java.util.LinkedList;
 import java.util.List;
-import java.util.UUID;
 
 public class WorkTimePolicyDataAdapter {
     private static final String LOG_TAG = WorkTimePolicyDataAdapter.class.getSimpleName();
@@ -79,7 +77,8 @@ public class WorkTimePolicyDataAdapter {
         Cursor cursor = resolver.query(WorkTimePolicyDataHelper.CONTENT_URI, projection, null, null, WorkTimePolicyDataHelper.DEFAULT_SORT_ORDER);
         if (cursor != null && cursor.moveToFirst()) {
             do {
-                FixWorkTimePolicy policy = generateFromCursor(cursor);
+                FixWorkTimePolicy policy = WorkTimePolicyDataHelper.generateFromCursor(cursor);
+                Log.i(LOG_TAG, "policy: " + policy);
                 policyList.add(policy);
             } while (cursor.moveToNext());
         }
@@ -97,7 +96,7 @@ public class WorkTimePolicyDataAdapter {
             return null;
         }
 
-        return generateFromCursor(cursor);
+        return WorkTimePolicyDataHelper.generateFromCursor(cursor);
     }
 
     public FixWorkTimePolicy getByPos(long pos) {
@@ -109,32 +108,7 @@ public class WorkTimePolicyDataAdapter {
             return null;
         }
 
-        return generateFromCursor(cursor);
+        return WorkTimePolicyDataHelper.generateFromCursor(cursor);
     }
 
-    private FixWorkTimePolicy generateFromCursor(Cursor cursor) {
-        int id = cursor.getInt(0);
-        String str = cursor.getString(1);
-        UUID uuid = UUID.fromString(str);
-
-        String name = cursor.getString(2);
-        String shortName = cursor.getString(3);
-        int type = cursor.getInt(4);
-        long checkIn = cursor.getLong(5);
-        long latestCheckIn = cursor.getLong(6);
-        long checkOut = cursor.getLong(7);
-
-        if (type == WorkTimePolicyDataHelper.POLICY_TYPE_FIX) {
-            FixWorkTimePolicy policy = new FixWorkTimePolicy(name, shortName, checkIn, checkOut - checkIn);
-            policy.setUuid(uuid);
-            return policy;
-        }
-        if (type == WorkTimePolicyDataHelper.POLICY_TYPE_FLEX) {
-            FlexWorkTimePolicy policy = new FlexWorkTimePolicy(name, shortName, checkIn, latestCheckIn, checkOut - checkIn);
-            policy.setUuid(uuid);
-            return policy;
-        }
-
-        return null;
-    }
 }

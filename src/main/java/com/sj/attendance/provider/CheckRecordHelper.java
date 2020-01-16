@@ -1,10 +1,15 @@
 package com.sj.attendance.provider;
 
 import android.content.ContentValues;
+import android.database.Cursor;
 import android.net.Uri;
 
 import com.sj.attendance.bl.CheckRecord;
 import com.sj.attendance.bl.TimeUtils;
+
+import java.text.ParseException;
+import java.util.Date;
+import java.util.UUID;
 
 public class CheckRecordHelper {
     private static final String KEYWORD = "records";
@@ -36,16 +41,53 @@ public class CheckRecordHelper {
     public static final Uri CONTENT_URI = Uri.parse("content://" + AUTHORITY + "/item");
     public static final Uri CONTENT_POS_URI = Uri.parse("content://" + AUTHORITY + "/pos");
 
-    public static ContentValues toValues(CheckRecord recordInfo) {
+    static ContentValues toValues(CheckRecord checkRecord) {
         ContentValues values = new ContentValues();
         {
-            values.put(UUID, recordInfo.getUuid().toString());
-            values.put(REAL_CHECK_IN, TimeUtils.toISO8601(recordInfo.realCheckInTime));
-            values.put(REAL_CHECK_OUT, TimeUtils.toISO8601(recordInfo.realCheckOutTime));
+            values.put(UUID, checkRecord.getUuid().toString());
+            values.put(REAL_CHECK_IN, TimeUtils.toISO8601(checkRecord.realCheckInTime));
+            values.put(REAL_CHECK_OUT, TimeUtils.toISO8601(checkRecord.realCheckOutTime));
 
-            values.put(POLICY_UUID, recordInfo.policy.getUuid().toString());
-            values.put(POLICY_SET_NAME, recordInfo.policySetName);
+            values.put(POLICY_UUID, checkRecord.policy.getUuid().toString());
+            values.put(POLICY_SET_NAME, checkRecord.policySetName);
         }
         return values;
+    }
+
+    static CheckRecord generateFromCursor(Cursor cursor) {
+        CheckRecord checkRecord;
+        {
+            int id = cursor.getInt(0);
+
+            String str = cursor.getString(1);
+            java.util.UUID uuid = java.util.UUID.fromString(str);
+
+            str = cursor.getString(2);
+            Date realCheckIn = null;
+            try {
+                realCheckIn = TimeUtils.fromISO8601(str);
+            } catch (ParseException e) {
+                e.printStackTrace();
+            }
+
+            str = cursor.getString(3);
+            Date realCheckOut = null;
+            try {
+                realCheckOut = TimeUtils.fromISO8601(str);
+            } catch (ParseException e) {
+                e.printStackTrace();
+            }
+
+            str = cursor.getString(4);
+            UUID policyUuid = java.util.UUID.fromString(str);
+
+            // policy_set_name
+            str = cursor.getString(5);
+
+            checkRecord = new CheckRecord(str, realCheckIn, realCheckOut, policyUuid);
+            checkRecord.setId(id);
+            checkRecord.setUuid(uuid);
+        }
+        return checkRecord;
     }
 }

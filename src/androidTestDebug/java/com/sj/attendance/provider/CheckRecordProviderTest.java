@@ -14,7 +14,6 @@ import com.sj.attendance.bl.WorkTimePolicyFactory;
 
 import java.util.Calendar;
 import java.util.Date;
-import java.util.LinkedList;
 import java.util.List;
 
 public class CheckRecordProviderTest extends ProviderTestCase2 {
@@ -45,7 +44,7 @@ public class CheckRecordProviderTest extends ProviderTestCase2 {
             calendar.add(Calendar.HOUR, -4);
             Date realCheckInDate = calendar.getTime();
 
-            checkRecord = new CheckRecord("xxx", policy, realCheckInDate, realCheckOutDate);
+            checkRecord = new CheckRecord("xxx", realCheckInDate, realCheckOutDate, policy);
         }
         return checkRecord;
     }
@@ -71,6 +70,5 @@ public class CheckRecordProviderTest extends ProviderTestCase2 {
         for (CheckRecord checkRecord : checkRecordList) {
             Log.d(TAG, checkRecord.toString());
         }
-
     }
 }
