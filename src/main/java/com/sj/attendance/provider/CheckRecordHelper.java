@@ -5,7 +5,7 @@ import android.database.Cursor;
 import android.net.Uri;
 
 import com.sj.attendance.bl.CheckRecord;
-import com.sj.attendance.bl.TimeUtils;
+import com.sj.time.DateTimeUtils;
 
 import java.text.ParseException;
 import java.util.Date;
@@ -45,8 +45,8 @@ public class CheckRecordHelper {
         ContentValues values = new ContentValues();
         {
             values.put(UUID, checkRecord.getUuid().toString());
-            values.put(REAL_CHECK_IN, TimeUtils.toISO8601(checkRecord.realCheckInTime));
-            values.put(REAL_CHECK_OUT, TimeUtils.toISO8601(checkRecord.realCheckOutTime));
+            values.put(REAL_CHECK_IN, DateTimeUtils.toISO8601(checkRecord.realCheckInTime));
+            values.put(REAL_CHECK_OUT, DateTimeUtils.toISO8601(checkRecord.realCheckOutTime));
 
             values.put(POLICY_UUID, checkRecord.policy.getUuid().toString());
             values.put(POLICY_SET_NAME, checkRecord.policySetName);
@@ -65,7 +65,7 @@ public class CheckRecordHelper {
             str = cursor.getString(2);
             Date realCheckIn = null;
             try {
-                realCheckIn = TimeUtils.fromISO8601(str);
+                realCheckIn = DateTimeUtils.fromISO8601(str);
             } catch (ParseException e) {
                 e.printStackTrace();
             }
@@ -73,7 +73,7 @@ public class CheckRecordHelper {
             str = cursor.getString(3);
             Date realCheckOut = null;
             try {
-                realCheckOut = TimeUtils.fromISO8601(str);
+                realCheckOut = DateTimeUtils.fromISO8601(str);
             } catch (ParseException e) {
                 e.printStackTrace();
             }
