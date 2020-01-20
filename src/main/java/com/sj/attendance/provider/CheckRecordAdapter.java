@@ -52,11 +52,16 @@ public class CheckRecordAdapter {
         return id;
     }
 
-    public boolean update(CheckRecord recordInfo) {
-        Uri uri = ContentUris.withAppendedId(CheckRecordHelper.CONTENT_URI, recordInfo.getId());
-        ContentValues values = CheckRecordHelper.toValues(recordInfo);
-        int count = resolver.update(uri, values, null, null);
-
+    public boolean update(CheckRecord checkRecord) {
+        SjLog sjLog = sjLogGen.build("insert(" + checkRecord + ")");
+        sjLog.in();
+        int count = 0;
+        {
+            Uri uri = ContentUris.withAppendedId(CheckRecordHelper.CONTENT_URI, checkRecord.getId());
+            ContentValues values = CheckRecordHelper.toValues(checkRecord);
+            count = resolver.update(uri, values, null, null);
+        }
+        sjLog.out();
         return count > 0;
     }
 
@@ -77,8 +82,8 @@ public class CheckRecordAdapter {
         Cursor cursor = resolver.query(CheckRecordHelper.CONTENT_URI, projection, null, null, CheckRecordHelper.DEFAULT_SORT_ORDER);
         if (cursor != null && cursor.moveToFirst()) {
             do {
-                CheckRecord policy = CheckRecordHelper.generateFromCursor(cursor);
-                recordList.add(policy);
+                CheckRecord checkRecord = CheckRecordHelper.generateFromCursor(cursor);
+                recordList.add(checkRecord);
             } while (cursor.moveToNext());
         }
 
